@@ -10,35 +10,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # 3. Install Python dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # 4. Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      # 5. Set up gcloud CLI
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Start Cloud SQL Auth Proxy
-        uses: google-github-actions/cloud-sql-proxy@v1
-        with:
-          instance_connection_name: ${{ secrets.CLOUD_SQL_CONNECTION_NAME }}
-          port: ${{ secrets.DB_PORT }}
+      # 6. Download Cloud SQL Auth Proxy
+      - name: Download Cloud SQL Auth Proxy
+        run: |
+          wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy
+          chmod +x cloud_sql_proxy
 
+      # 7. Start Cloud SQL Auth Proxy in background
+      - name: Start Cloud SQL Auth Proxy
+        run: |
+          ./cloud_sql_proxy -instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}=tcp:${{ secrets.DB_PORT }} &
+
+      # 8. Run Django migrations
       - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: config.settings
@@ -50,6 +61,7 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
         run: python manage.py migrate --noinput
 
+      # 9. Collect static files
       - name: Collect static files
         env:
           DJANGO_SETTINGS_MODULE: config.settings
@@ -61,5 +73,6 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
         run: python manage.py collectstatic --noinput
 
+      # 10. Deploy to App Engine
       - name: Deploy to App Engine
         run: gcloud app deploy app.yaml --quiet
