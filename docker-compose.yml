@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: django
+      POSTGRES_PASSWORD: django
+      POSTGRES_DB: kronobot
+    ports:
+      - "5432:5432"
+    volumes:
+      - kronobot_postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    environment:
+      DB_ENGINE: django.db.backends.postgresql
+      DB_HOST: db
+      DB_USER: django
+      DB_PASSWORD: django
+      DB_NAME: kronobot
+      DB_PORT: 5432
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - db
+    volumes:
+      - .:/usr/src/app
+
+volumes:
+  kronobot_postgres_data:
