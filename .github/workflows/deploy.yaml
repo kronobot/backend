@@ -26,14 +26,24 @@ jobs:
       - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: config.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_ENGINE: ${{ secrets.DB_ENGINE }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           python manage.py migrate --noinput
 
       - name: Collect static files
         env:
           DJANGO_SETTINGS_MODULE: config.settings
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_ENGINE: ${{ secrets.DB_ENGINE }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           python manage.py collectstatic --noinput
 
