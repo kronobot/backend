@@ -4,7 +4,6 @@ __pycache
 .idea
 static
 
-kronobot.json
 local.env
 .env
 .env.dev
