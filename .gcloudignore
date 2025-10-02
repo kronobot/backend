@@ -12,6 +12,7 @@
 # below:
 .git
 .gitignore
+kronobot.json
 
 # Python pycache:
 __pycache__/
