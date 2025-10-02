@@ -11,3 +11,4 @@ local.env
 .env.dev.db
 .env.prod
 .env.prod.db
+db.sqlite3
