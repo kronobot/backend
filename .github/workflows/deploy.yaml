@@ -47,15 +47,15 @@ jobs:
       # 7. Start Cloud SQL Auth Proxy in background
       - name: Start Cloud SQL Auth Proxy
         run: |
-          ./cloud_sql_proxy -instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}=tcp:${{ secrets.DB_PORT }} &
+          ./cloud_sql_proxy -instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}=tcp:5432 &
 
       # 8. Run Django migrations
       - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: config.settings
           DB_ENGINE: ${{ secrets.DB_ENGINE }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -66,8 +66,8 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: config.settings
           DB_ENGINE: ${{ secrets.DB_ENGINE }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
