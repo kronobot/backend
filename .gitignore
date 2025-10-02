@@ -1,0 +1,13 @@
+*.pyc
+__pycache
+.DS_Store
+.idea
+static
+
+local.env
+.env
+.env.dev
+.env.dev.db
+.env.prod
+.env.prod.db
+db.sqlite3
