@@ -1,6 +1,6 @@
 runtime: python311
 
-entrypoint: gunicorn -b :$PORT backend.wsgi:application
+entrypoint: gunicorn -b :$PORT config.wsgi:application
 
 instance_class: F1  # clase más pequeña y gratuita
 
@@ -13,7 +13,7 @@ automatic_scaling:
   target_throughput_utilization: 0.9
 
 env_variables:
-  DJANGO_SETTINGS_MODULE: "backend.settings"
+  DJANGO_SETTINGS_MODULE: "config.settings"
 
 handlers:
   - url: /static
