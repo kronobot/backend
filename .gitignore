@@ -4,7 +4,6 @@ __pycache
 .idea
 static
 
-# Keep passwords outside the repository
 local.env
 .env
 .env.dev

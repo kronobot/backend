@@ -11,12 +11,12 @@ DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
-    "django.contrib.admin",          # Admin
-    "django.contrib.auth",           # Usuarios y permisos
-    "django.contrib.contenttypes",   # Tipos de contenido
-    "django.contrib.sessions",       # Sesiones
-    "django.contrib.messages",       # Mensajes flash (requerido por admin)
-    "django.contrib.staticfiles",    # Archivos estáticos
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 ]
 
 MIDDLEWARE = [
@@ -25,7 +25,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",  # necesario para admin
+    "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -48,7 +48,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-# Base de datos dummy (no persistente en GAE, usar Cloud SQL si necesitas real DB)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
