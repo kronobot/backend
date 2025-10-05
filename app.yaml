@@ -13,6 +13,7 @@ automatic_scaling:
   target_throughput_utilization: 0.9
 
 env_variables:
+  GOOGLE_CLOUD_PROJECT_ID: kronobot-473909
   DJANGO_SETTINGS_MODULE: "config.settings"
   ALLOWED_HOSTS: "*"  # update with proper allowed hosts
 
