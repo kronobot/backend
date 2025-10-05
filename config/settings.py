@@ -1,14 +1,9 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from google.cloud import secretmanager
+from config.secrets import get_secret
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(os.path.join(BASE_DIR, ".env"))
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
-
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -48,20 +43,51 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
+print("Loading settings...")
+print("GAE_APPLICATION", os.getenv('GAE_APPLICATION'))
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.environ["DB_ENGINE"],
-        "HOST": os.environ["DB_HOST"],
-        "USER": os.environ["DB_USER"],
-        "PASSWORD": os.environ["DB_PASSWORD"],
-        "NAME": os.environ["DB_NAME"],
-        "PORT": os.environ["DB_PORT"],
+if os.getenv('GAE_APPLICATION') is not None:
+    print("starting in prod mode..")
+    SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
+    DEBUG = True
+    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+
+    # Redirects all non-HTTPS requests to HTTPS
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    DATABASES = {
+        "default": {
+            "ENGINE": get_secret("DB_ENGINE", GOOGLE_CLOUD_PROJECT_ID),
+            "HOST": get_secret("DB_HOST", GOOGLE_CLOUD_PROJECT_ID),
+            "USER": get_secret("DB_USER", GOOGLE_CLOUD_PROJECT_ID),
+            "PASSWORD": get_secret("DB_PASSWORD", GOOGLE_CLOUD_PROJECT_ID),
+            "NAME": get_secret("DB_NAME", GOOGLE_CLOUD_PROJECT_ID),
+            "PORT": get_secret("DB_PORT", GOOGLE_CLOUD_PROJECT_ID),
+        }
     }
-}
+    print("DEBUG:", DATABASES)
+
+else:
+    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+    DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
+    ALLOWED_HOSTS = ["*"]
+
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ["DB_ENGINE"],
+            "HOST": os.environ["DB_HOST"],
+            "USER": os.environ["DB_USER"],
+            "PASSWORD": os.environ["DB_PASSWORD"],
+            "NAME": os.environ["DB_NAME"],
+            "PORT": os.environ["DB_PORT"],
+        }
+    }
 
 # Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+

@@ -2,18 +2,20 @@ runtime: python311
 
 entrypoint: gunicorn -b :$PORT config.wsgi:application
 
-instance_class: F1  # clase más pequeña y gratuita
+instance_class: F1  # cheapest instance
 
 automatic_scaling:
-  max_instances: 1    # máximo 1 instancia (gratis)
-  min_instances: 0    # no mantiene instancias cuando no hay tráfico
+  max_instances: 1    # 1 instance max to be in the free tier
+  min_instances: 0
   max_idle_instances: 1
   min_idle_instances: 0
   target_cpu_utilization: 0.9
   target_throughput_utilization: 0.9
 
 env_variables:
+  GOOGLE_CLOUD_PROJECT_ID: kronobot-473909
   DJANGO_SETTINGS_MODULE: "config.settings"
+  ALLOWED_HOSTS: "*"  # update with proper allowed hosts
 
 handlers:
   - url: /static
