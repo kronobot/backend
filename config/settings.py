@@ -50,7 +50,7 @@ print("GAE_APPLICATION", os.getenv('GAE_APPLICATION'))
 
 if os.getenv('GAE_APPLICATION') is not None:
     print("starting in prod mode..")
-    DEBUG = False
+    DEBUG = True
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
     # Redirects all non-HTTPS requests to HTTPS
