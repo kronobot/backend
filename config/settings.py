@@ -5,8 +5,6 @@ from config.secrets import get_secret
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,6 +48,7 @@ print("GAE_APPLICATION", os.getenv('GAE_APPLICATION'))
 
 if os.getenv('GAE_APPLICATION') is not None:
     print("starting in prod mode..")
+    SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
     DEBUG = True
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
@@ -70,6 +69,7 @@ if os.getenv('GAE_APPLICATION') is not None:
     print("DEBUG:", DATABASES)
 
 else:
+    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
     DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
     ALLOWED_HOSTS = ["*"]
 
