@@ -43,13 +43,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
-print("Loading settings...")
-print("GAE_APPLICATION", os.getenv('GAE_APPLICATION'))
 
 if os.getenv('GAE_APPLICATION') is not None:
-    print("starting in prod mode..")
     SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
-    DEBUG = True
+    DEBUG = False
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
     # Redirects all non-HTTPS requests to HTTPS
@@ -66,10 +63,9 @@ if os.getenv('GAE_APPLICATION') is not None:
             "PORT": get_secret("DB_PORT", GOOGLE_CLOUD_PROJECT_ID),
         }
     }
-    print("DEBUG:", DATABASES)
 
 else:
-    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
     DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
     ALLOWED_HOSTS = ["*"]
 

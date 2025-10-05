@@ -4,7 +4,7 @@ from django.contrib import admin
 
 
 def home(request):
-    return HttpResponse("Hello, world desde Django en Google App Engine 🚀")
+    return HttpResponse("Hello world 🚀")
 
 urlpatterns = [
     path("", home),
