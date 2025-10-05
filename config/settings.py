@@ -65,7 +65,7 @@ if os.getenv('GAE_APPLICATION') is not None:
     }
 
 else:
-    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+    SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
     DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
     ALLOWED_HOSTS = ["*"]
 
