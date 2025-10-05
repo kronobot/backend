@@ -45,8 +45,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
+print("Loading settings...")
+print("GAE_APPLICATION", os.getenv('GAE_APPLICATION'))
 
 if os.getenv('GAE_APPLICATION') is not None:
+    print("starting in prod mode..")
     DEBUG = False
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
@@ -64,6 +67,7 @@ if os.getenv('GAE_APPLICATION') is not None:
             "PORT": get_secret("DB_PORT", GOOGLE_CLOUD_PROJECT_ID),
         }
     }
+    print("DEBUG:", DATABASES)
 
 else:
     DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
