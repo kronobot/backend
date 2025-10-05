@@ -22,6 +22,8 @@ services:
     ports:
       - "8000:8000"
     environment:
+      DEBUG: true
+      SECRET_KEY: secret-key
       DB_ENGINE: django.db.backends.postgresql
       DB_HOST: db
       DB_USER: django
