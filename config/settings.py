@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from google.cloud import secretmanager
 from config.secrets import get_secret
+import sentry_sdk
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -44,18 +45,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
-print("Loading settings...")
-print("GAE_APPLICATION", os.getenv('GAE_APPLICATION'))
 
 if os.getenv('GAE_APPLICATION') is not None:
-    print("starting in prod mode..")
-    SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
     DEBUG = True
-    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+    SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
+    ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(",")
 
     # Redirects all non-HTTPS requests to HTTPS
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Media files
+    INSTALLED_APPS += ["storages"]
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_BUCKET_NAME = "kronobot-backend-media"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
     DATABASES = {
         "default": {
@@ -67,12 +71,36 @@ if os.getenv('GAE_APPLICATION') is not None:
             "PORT": get_secret("DB_PORT", GOOGLE_CLOUD_PROJECT_ID),
         }
     }
-    print("DEBUG:", DATABASES)
+
+    # Sentry setup
+    sentry_sdk.init(
+        dsn=get_secret("SENTRY_DSN", GOOGLE_CLOUD_PROJECT_ID),
+        # Add data like request headers and IP for users;
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+        #  performance
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        traces_sample_rate=1.0,
+        #  performance
+        #  profiling
+        # To collect profiles for all profile sessions,
+        # set `profile_session_sample_rate` to 1.0.
+        profile_session_sample_rate=1.0,
+        # Profiles will be automatically collected while
+        # there is an active span.
+        profile_lifecycle="trace",
+        #  profiling
+    )
 
 else:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
     DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
     ALLOWED_HOSTS = ["*"]
+
+    # Media files
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
     DATABASES = {
         "default": {

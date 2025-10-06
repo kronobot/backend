@@ -6,5 +6,6 @@ from events.domain.event import Event
 class EventAdmin(admin.ModelAdmin):
     list_display = ["name", "start_date", "end_date"]
     list_filter = ["name"]
+    search_fields = ["name"]
 
 admin.site.register(Event, EventAdmin)
