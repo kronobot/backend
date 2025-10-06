@@ -11,6 +11,12 @@ class EventAdmin(admin.ModelAdmin):
     readonly_fields = ["image_tag"]
 
     def image_tag(self, obj):
+        print("DEBUG")
+        print(obj)
+        print(obj.image)
+        print(obj.image.url)
+        print("END DEBUG")
+
         if obj.image:
             return format_html('<img src="{}" style="max-height: 100px;"/>', obj.image.url)
         return "-"
