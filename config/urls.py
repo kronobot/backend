@@ -5,8 +5,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 
 
-def error(request):
-    raise Exception("Test")
+def home(request):
+    return HttpResponse("Hello world 🚀")
+
 
 urlpatterns = [
     path("", home),
