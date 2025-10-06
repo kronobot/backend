@@ -47,7 +47,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
 
 if os.getenv('GAE_APPLICATION') is not None:
-    DEBUG = True
+    DEBUG = False
     SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
     ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(",")
 
@@ -60,7 +60,6 @@ if os.getenv('GAE_APPLICATION') is not None:
     GS_BUCKET_NAME = "kronobot-backend-media"
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
-    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
