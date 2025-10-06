@@ -8,12 +8,12 @@ from django.core.files.storage import default_storage
 def home(request):
     return HttpResponse("Hello world 🚀")
 
-def test_storage(request):
-    return HttpResponse("Your storage is " + str(default_storage.__class__))
+def error(request):
+    raise Exception("Test")
 
 urlpatterns = [
     path("", home),
-    path("test_storage/", test_storage),
+    path("error/", error),
     path("admin/", admin.site.urls),
 ]
 
