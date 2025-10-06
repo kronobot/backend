@@ -1,7 +1,4 @@
-from django.contrib import admin
 from unfold.admin import ModelAdmin
-
-from events.domain.inscription import Inscription
 
 
 class InscriptionAdmin(ModelAdmin):
@@ -22,6 +19,5 @@ class InscriptionAdmin(ModelAdmin):
 
     def car_name(self, obj):
         return f"{obj.car.brand} {obj.car.model}"
-    car_name.short_description = 'Car'
 
-admin.site.register(Inscription, InscriptionAdmin)
+    car_name.short_description = 'Car'
