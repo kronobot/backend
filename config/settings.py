@@ -63,7 +63,6 @@ if os.getenv('GAE_APPLICATION') is not None:
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
             "OPTIONS": {
                 "bucket_name": GS_BUCKET_NAME,
-                "default_acl": "publicRead",
             },
         },
         "staticfiles": {
