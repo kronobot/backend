@@ -7,6 +7,7 @@ import sentry_sdk
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 INSTALLED_APPS = [
+    "unfold",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,6 +46,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
+
+UNFOLD = {
+    "SITE_TITLE": "My Admin Dashboard",
+    "SITE_HEADER": "My Admin Panel",
+    "SHOW_HISTORY": True,
+    "DARK_MODE": True,
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+    },
+}
 
 if os.getenv('GAE_APPLICATION') is not None:
     DEBUG = False

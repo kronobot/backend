@@ -1,9 +1,10 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 
 from events.domain.inscription import Inscription
 
 
-class InscriptionAdmin(admin.ModelAdmin):
+class InscriptionAdmin(ModelAdmin):
     list_display = ["event_name", "driver_name", "codriver_name", "car_name"]
     list_filter = ["event"]
 
