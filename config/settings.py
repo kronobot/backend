@@ -56,9 +56,6 @@ if os.getenv('GAE_APPLICATION') is not None:
 
     # Media files
     INSTALLED_APPS += ["storages"]
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
-        json.loads(get_secret("SA_KEY", GOOGLE_CLOUD_PROJECT_ID))
-    )
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     GS_BUCKET_NAME = "kronobot-backend-media"
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
