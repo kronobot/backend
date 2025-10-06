@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from google.cloud import secretmanager
 from config.secrets import get_secret
+import sentry_sdk
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -70,6 +71,27 @@ if os.getenv('GAE_APPLICATION') is not None:
             "PORT": get_secret("DB_PORT", GOOGLE_CLOUD_PROJECT_ID),
         }
     }
+
+    # Sentry setup
+    sentry_sdk.init(
+        dsn=get_secret("SENTRY_DSN", GOOGLE_CLOUD_PROJECT_ID),
+        # Add data like request headers and IP for users;
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+        #  performance
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        traces_sample_rate=1.0,
+        #  performance
+        #  profiling
+        # To collect profiles for all profile sessions,
+        # set `profile_session_sample_rate` to 1.0.
+        profile_session_sample_rate=1.0,
+        # Profiles will be automatically collected while
+        # there is an active span.
+        profile_lifecycle="trace",
+        #  profiling
+    )
 
 else:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
