@@ -8,22 +8,7 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ["name", "start_date", "end_date"]
     list_filter = ["name"]
     search_fields = ["name"]
-    fields = [
-        "id",
-        "name",
-        "start_date",
-        "end_date",
-        "category",
-        "provider",
-        "status",
-        "description",
-        "image",
-        "image_tag",
-        "provider_inscriptions_url",
-        "provider_event_url",
-        "provider_times_url",
-
-    ]
+    readonly_fields = ["image_tag"]
 
     def image_tag(self, obj):
         if obj.image:
