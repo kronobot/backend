@@ -46,7 +46,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
 
 if os.getenv('GAE_APPLICATION') is not None:
-    DEBUG = False
+    DEBUG = True
     SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
     ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(",")
 
