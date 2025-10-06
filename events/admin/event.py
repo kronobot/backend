@@ -15,6 +15,6 @@ class EventAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="max-height: 100px;"/>', obj.image.url)
         return "-"
 
-    image_tag.short_description = "Image preview"
+    image_preview.short_description = "Image preview"
 
 admin.site.register(Event, EventAdmin)
