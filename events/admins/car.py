@@ -1,7 +1,4 @@
-from django.contrib import admin
 from unfold.admin import ModelAdmin
-
-from events.domain.car import Car
 
 
 class CarAdmin(ModelAdmin):
@@ -13,5 +10,3 @@ class CarAdmin(ModelAdmin):
 
     competitor_name.admin_order_field = 'competitor__name'
     competitor_name.short_description = 'Driver'
-
-admin.site.register(Car, CarAdmin)

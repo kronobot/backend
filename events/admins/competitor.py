@@ -1,8 +1,6 @@
-from django.contrib import admin
 from unfold.admin import ModelAdmin, StackedInline
 
 from events.domain.car import Car
-from events.domain.competitor import Competitor
 from events.domain.inscription import Inscription
 
 
@@ -37,5 +35,3 @@ class CompetitorAdmin(ModelAdmin):
     list_display = ["name"]
     search_fields = ["name"]
     inlines = [CarInline, InscriptionInline]
-
-admin.site.register(Competitor, CompetitorAdmin)
