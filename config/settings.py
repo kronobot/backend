@@ -64,7 +64,10 @@ if os.getenv('GAE_APPLICATION') is not None:
             "OPTIONS": {
                 "bucket_name": GS_BUCKET_NAME,
             },
-        }
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
     }
     MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
