@@ -58,18 +58,21 @@ if os.getenv('GAE_APPLICATION') is not None:
     # Media files
     INSTALLED_APPS += ["storages"]
     GS_BUCKET_NAME = "kronobot-backend-media"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+
+    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
             "OPTIONS": {
                 "bucket_name": GS_BUCKET_NAME,
+                "base_url": MEDIA_URL,
             },
         },
         "staticfiles": {
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
     DATABASES = {
         "default": {
