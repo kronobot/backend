@@ -4,4 +4,3 @@ from events.admin.event import EventAdmin
 from events.admin.team import TeamAdmin
 
 __all__ = ["EventAdmin","CompetitorAdmin", "CarAdmin", "TeamAdmin"]
-
