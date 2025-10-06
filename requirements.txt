@@ -6,3 +6,4 @@ Pillow==11.3.0
 django-storages[google]==1.14.6
 google-cloud-storage==3.4.0
 sentry-sdk[django]==2.40.0
+django-unfold==0.67.0

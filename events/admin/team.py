@@ -1,10 +1,10 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 
-from events.domain.event import Event
 from events.domain.team import Team
 
 
-class TeamAdmin(admin.ModelAdmin):
+class TeamAdmin(ModelAdmin):
     list_display = ["name"]
 
 admin.site.register(Team, TeamAdmin)

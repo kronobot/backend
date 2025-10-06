@@ -1,9 +1,10 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 
 from events.domain.car import Car
 
 
-class CarAdmin(admin.ModelAdmin):
+class CarAdmin(ModelAdmin):
     list_display = ["brand", "model", "competitor__name"]
     list_filter = ["competitor__name"]
 

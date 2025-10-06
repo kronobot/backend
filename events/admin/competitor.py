@@ -1,18 +1,19 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, StackedInline
 
 from events.domain.car import Car
 from events.domain.competitor import Competitor
 from events.domain.inscription import Inscription
 
 
-class CarInline(admin.TabularInline):
+class CarInline(StackedInline):
     model = Car
     extra = 0
     fields = ['brand', 'model', 'group']
     readonly_fields = ['brand', 'model', 'group']
     can_delete = False
 
-class InscriptionInline(admin.TabularInline):
+class InscriptionInline(StackedInline):
     model = Inscription
     fk_name = 'driver'
     extra = 0
@@ -32,7 +33,7 @@ class InscriptionInline(admin.TabularInline):
         return f"{obj.car.brand} {obj.car.model}"
     car_name.short_description = 'Car'
 
-class CompetitorAdmin(admin.ModelAdmin):
+class CompetitorAdmin(ModelAdmin):
     list_display = ["name"]
     search_fields = ["name"]
     inlines = [CarInline, InscriptionInline]
