@@ -3,6 +3,7 @@ __pycache
 .DS_Store
 .idea
 static
+media
 
 local.env
 .env

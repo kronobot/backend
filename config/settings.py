@@ -46,13 +46,22 @@ WSGI_APPLICATION = "config.wsgi.application"
 GOOGLE_CLOUD_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
 
 if os.getenv('GAE_APPLICATION') is not None:
-    SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
     DEBUG = False
-    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+    SECRET_KEY = get_secret("DJANGO_SECRET_KEY", GOOGLE_CLOUD_PROJECT_ID)
+    ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(",")
 
     # Redirects all non-HTTPS requests to HTTPS
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Media files
+    INSTALLED_APPS += ["storages"]
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+        json.loads(get_secret("SA_KEY", GOOGLE_CLOUD_PROJECT_ID))
+    )
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_BUCKET_NAME = "kronobot-backend-media"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
     DATABASES = {
         "default": {
@@ -69,6 +78,10 @@ else:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
     DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1", "yes"]
     ALLOWED_HOSTS = ["*"]
+
+    # Media files
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
     DATABASES = {
         "default": {
