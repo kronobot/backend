@@ -1,0 +1,16 @@
+<section class="mt-8">
+  <div class="flex items-center justify-between px-4 mb-3">
+    <h2 class="text-lg font-semibold text-ink">{{ label }}</h2>
+    {% if events|length >= 5 %}
+      {% include "webapp/partials/_scroll_arrows.html" %}
+    {% endif %}
+  </div>
+  <div class="relative">
+    <div class="scroll-row flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 px-4">
+      {% for event in events %}
+        {% include "webapp/partials/_event_card.html" with event=event %}
+      {% endfor %}
+    </div>
+    <div class="scroll-fade absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+  </div>
+</section>

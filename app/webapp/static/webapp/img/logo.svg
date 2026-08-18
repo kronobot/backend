@@ -1,0 +1,25 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kronobot">
+  <defs>
+    <clipPath id="kronobot-circle-clip">
+      <circle cx="100" cy="104" r="88" />
+    </clipPath>
+    <linearGradient id="kronobot-body-gradient" x1="0%" y1="0%" x2="65%" y2="100%">
+      <stop offset="0%" stop-color="#5B4FE0" />
+      <stop offset="45%" stop-color="#6D4AE8" />
+      <stop offset="100%" stop-color="#8B3FFA" />
+    </linearGradient>
+  </defs>
+
+  <rect x="92" y="4" width="16" height="14" rx="4" fill="#5B4FE0" />
+  <circle cx="100" cy="14" r="11" fill="none" stroke="#5B4FE0" stroke-width="6" />
+  <rect x="148" y="24" width="10" height="18" rx="2" fill="#5B4FE0" transform="rotate(35 153 33)" />
+
+  <g clip-path="url(#kronobot-circle-clip)">
+    <rect x="0" y="0" width="200" height="200" fill="url(#kronobot-body-gradient)" />
+  </g>
+
+  <rect x="54" y="88" width="92" height="42" rx="21" fill="#FFFFFF" />
+  <circle cx="80" cy="109" r="7.5" fill="#6D4AE8" />
+  <circle cx="120" cy="109" r="7.5" fill="#6D4AE8" />
+  <path d="M87 119 Q100 128 113 119" stroke="#6D4AE8" stroke-width="4" fill="none" stroke-linecap="round" />
+</svg>

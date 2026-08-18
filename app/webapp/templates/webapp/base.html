@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Kronobot{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            ink: '#031419',
+            muted: '#536B75',
+            hairline: '#CCD2D8',
+            surface: '#FAFBFB',
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="stylesheet" href="{% static 'webapp/css/webapp.css' %}?v=3">
+  <link rel="icon" href="{% static 'webapp/img/logo.png' %}" type="image/png">
+</head>
+<body class="bg-white text-ink font-sans antialiased">
+  <header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-hairline">
+    <div class="max-w-5xl mx-auto flex items-center gap-3 px-4 py-3">
+      <a href="{% url 'webapp:landing' %}" class="flex items-center gap-2">
+        <img src="{% static 'webapp/img/logo.png' %}" alt="Kronobot" class="h-9 w-9">
+        <span class="font-bold text-lg tracking-tight text-violet-700">Kronobot</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto pb-16">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-hairline py-6 mt-8">
+    <p class="text-center text-sm text-muted">Kronobot</p>
+  </footer>
+
+  <script>
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-scroll-dir]');
+      if (!button) return;
+      var section = button.closest('section');
+      var row = section ? section.querySelector('.scroll-row') : null;
+      if (!row) return;
+      var amount = row.clientWidth * 0.8 * (button.dataset.scrollDir === 'left' ? -1 : 1);
+      row.scrollBy({ left: amount, behavior: 'smooth' });
+    });
+
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-tab-button]');
+      if (!button) return;
+      var group = button.parentElement;
+      var container = button.closest('[data-tab-scope]');
+      var tab = button.dataset.tab;
+
+      group.querySelectorAll('[data-tab-button]').forEach(function (btn) {
+        var active = btn === button;
+        btn.classList.toggle('bg-violet-600', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('text-muted', !active);
+      });
+
+      container.querySelectorAll('[data-tab-panel]').forEach(function (panel) {
+        panel.hidden = panel.dataset.tab !== tab;
+      });
+    });
+
+    function favoritesStorageKey(eventId) {
+      return 'kronobot:favorites:' + eventId;
+    }
+
+    function readFavorites(eventId) {
+      try {
+        return JSON.parse(localStorage.getItem(favoritesStorageKey(eventId))) || [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function setFavoriteButtonState(button, favorited) {
+      button.setAttribute('aria-pressed', favorited);
+      button.classList.toggle('text-red-500', favorited);
+      button.classList.toggle('text-hairline', !favorited);
+      var icon = button.querySelector('[data-favorite-icon]');
+      if (icon) icon.setAttribute('fill', favorited ? 'currentColor' : 'none');
+    }
+
+    document.querySelectorAll('[data-tab-scope][data-event-id]').forEach(function (scope) {
+      var favorites = readFavorites(scope.dataset.eventId);
+      scope.querySelectorAll('[data-favorite-toggle]').forEach(function (button) {
+        setFavoriteButtonState(button, favorites.indexOf(button.dataset.inscriptionId) !== -1);
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-favorite-toggle]');
+      if (!button) return;
+      var scope = button.closest('[data-tab-scope][data-event-id]');
+      if (!scope) return;
+
+      var eventId = scope.dataset.eventId;
+      var inscriptionId = button.dataset.inscriptionId;
+      var favorites = readFavorites(eventId);
+      var index = favorites.indexOf(inscriptionId);
+      var nowFavorited = index === -1;
+
+      if (nowFavorited) {
+        favorites.push(inscriptionId);
+      } else {
+        favorites.splice(index, 1);
+      }
+      localStorage.setItem(favoritesStorageKey(eventId), JSON.stringify(favorites));
+      setFavoriteButtonState(button, nowFavorited);
+      applyFavoritesFilter(scope);
+    });
+
+    function applyFavoritesFilter(scope) {
+      var button = scope.querySelector('[data-favorites-filter-toggle]');
+      var active = !!button && button.getAttribute('aria-pressed') === 'true';
+      var favorites = readFavorites(scope.dataset.eventId);
+
+      scope.querySelectorAll('[data-tab-panel][data-tab="live"] [data-timeline-entry]').forEach(function (row) {
+        var inscriptionId = row.dataset.inscriptionId;
+        var shouldHide = active && inscriptionId !== '' && favorites.indexOf(inscriptionId) === -1;
+        // Plain `row.hidden = ...` doesn't work here: the row also carries the `flex` utility
+        // class, and Tailwind's `.flex { display: flex }` has the same specificity as the
+        // browser's default `[hidden] { display: none }`, so the class wins the cascade.
+        row.style.display = shouldHide ? 'none' : '';
+      });
+    }
+
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-favorites-filter-toggle]');
+      if (!button) return;
+      var scope = button.closest('[data-tab-scope][data-event-id]');
+      if (!scope) return;
+
+      var active = button.getAttribute('aria-pressed') !== 'true';
+      button.setAttribute('aria-pressed', active);
+      button.classList.toggle('bg-violet-600', active);
+      button.classList.toggle('text-white', active);
+      button.classList.toggle('border-violet-600', active);
+      button.classList.toggle('text-muted', !active);
+      applyFavoritesFilter(scope);
+    });
+  </script>
+</body>
+</html>

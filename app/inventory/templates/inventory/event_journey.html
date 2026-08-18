@@ -1,0 +1,74 @@
+{% if original %}
+    {% with stages_count=original.stages.count inscriptions_count=original.inscriptions.count %}
+        <div class="bg-base-100 border border-transparent mb-6 px-4 py-4 rounded-default dark:bg-white/[.02]">
+            <h2 class="font-semibold mb-4 text-font-important-light text-sm dark:text-font-important-dark">
+                Event journey
+            </h2>
+
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-0">
+                <div class="flex items-center gap-3 sm:flex-1">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {% if stages_count %}bg-primary-600 text-white{% else %}bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500{% endif %}">
+                        <span class="material-symbols-outlined">{% if stages_count %}check{% else %}route{% endif %}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-medium text-sm {% if stages_count %}text-font-important-light dark:text-font-important-dark{% else %}text-base-400 dark:text-base-500{% endif %}">
+                            Stages imported
+                        </span>
+                        {% if stages_count %}
+                            <a href="{% url 'admin:inventory_eventstage_changelist' %}?event__id__exact={{ original.pk }}&o=2.3" class="text-primary-600 text-xs font-medium hover:underline dark:text-primary-500">
+                                View
+                            </a>
+                        {% endif %}
+                        <span class="text-base-400 text-xs dark:text-base-500">
+                            {{ stages_count }} stage{{ stages_count|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="h-4 ml-5 w-px bg-base-200 sm:flex-1 sm:h-px sm:mx-4 sm:my-0 sm:w-auto dark:bg-base-800"></div>
+
+                <div class="flex items-center gap-3 sm:flex-1">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {% if inscriptions_count %}bg-primary-600 text-white{% else %}bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500{% endif %}">
+                        <span class="material-symbols-outlined">{% if inscriptions_count %}check{% else %}how_to_reg{% endif %}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-medium text-sm {% if inscriptions_count %}text-font-important-light dark:text-font-important-dark{% else %}text-base-400 dark:text-base-500{% endif %}">
+                            Inscriptions imported
+                        </span>
+                        {% if inscriptions_count %}
+                            <a href="{% url 'admin:inventory_inscription_changelist' %}?event__id__exact={{ original.pk }}&o=1" class="text-primary-600 text-xs font-medium hover:underline dark:text-primary-500">
+                                View
+                            </a>
+                        {% endif %}
+                        <span class="text-base-400 text-xs dark:text-base-500">
+                            {{ inscriptions_count }} inscription{{ inscriptions_count|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="h-4 ml-5 w-px bg-base-200 sm:flex-1 sm:h-px sm:mx-4 sm:my-0 sm:w-auto dark:bg-base-800"></div>
+
+                <div class="flex items-center gap-3 sm:flex-1">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {% if stage_times_count %}bg-primary-600 text-white{% else %}bg-base-200 text-base-400 dark:bg-base-800 dark:text-base-500{% endif %}">
+                        <span class="material-symbols-outlined">{% if stage_times_count %}check{% else %}timer{% endif %}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-medium text-sm {% if stage_times_count %}text-font-important-light dark:text-font-important-dark{% else %}text-base-400 dark:text-base-500{% endif %}">
+                            Stage times imported
+                        </span>
+                        {% if stage_times_count %}
+                            <a href="{% url 'admin:inventory_stageresult_changelist' %}?inscription__event__id__exact={{ original.pk }}&o=1" class="text-primary-600 text-xs font-medium hover:underline dark:text-primary-500">
+                                View
+                            </a>
+                        {% endif %}
+                        <span class="text-base-400 text-xs dark:text-base-500">
+                            {{ stage_times_count }} stage time{{ stage_times_count|pluralize }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "inventory/event_activity_chart.html" %}
+    {% endwith %}
+{% endif %}

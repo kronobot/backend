@@ -1,0 +1,49 @@
+{% extends "webapp/base.html" %}
+
+{% block title %}Kronobot — Próximos eventos{% endblock %}
+
+{% block content %}
+<section class="px-4 pt-8 pb-6">
+  <span class="inline-block text-xs font-semibold text-violet-700 bg-violet-100 rounded-full px-3 py-1 mb-3">Kronobot</span>
+  <h1 class="text-ink text-2xl font-bold">Próximos eventos</h1>
+  <p class="text-muted text-sm mt-1">Los próximos eventos de Kronobot</p>
+</section>
+
+<section>
+  {% if upcoming_events %}
+    {% if upcoming_events|length >= 5 %}
+      <div class="hidden md:flex justify-end gap-2 px-4 mb-2">
+        {% include "webapp/partials/_scroll_arrows.html" %}
+      </div>
+    {% endif %}
+    <div class="relative">
+      <div class="scroll-row flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 px-4">
+        {% for event in upcoming_events %}
+          {% include "webapp/partials/_event_card.html" with event=event %}
+        {% endfor %}
+      </div>
+      <div class="scroll-fade absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+    </div>
+  {% else %}
+    <p class="text-muted text-sm py-4 px-4">No hay eventos próximos por ahora.</p>
+  {% endif %}
+</section>
+
+{% for row in category_rows %}
+  {% include "webapp/partials/_category_row.html" with label=row.label events=row.events %}
+{% endfor %}
+
+{% if other_years %}
+<section class="mt-10 px-4">
+  <h2 class="text-lg font-semibold text-ink mb-3">Otros años</h2>
+  <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+    {% for year in other_years %}
+      <a href="{% url 'webapp:year_archive' year=year %}"
+         class="rounded-xl bg-white border border-hairline hover:border-violet-300 transition py-4 text-center font-semibold text-violet-700">
+        {{ year }}
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

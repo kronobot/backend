@@ -22,6 +22,7 @@ jobs:
 
       # 3. Install Python dependencies
       - name: Install dependencies
+        working-directory: app
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -51,6 +52,7 @@ jobs:
 
       # 8. Run Django migrations
       - name: Run migrations
+        working-directory: app
         env:
           DJANGO_SETTINGS_MODULE: config.settings
           DB_ENGINE: ${{ secrets.DB_ENGINE }}
@@ -63,6 +65,7 @@ jobs:
 
       # 9. Collect static files
       - name: Collect static files
+        working-directory: app
         env:
           DJANGO_SETTINGS_MODULE: config.settings
           DB_ENGINE: ${{ secrets.DB_ENGINE }}
@@ -75,4 +78,5 @@ jobs:
 
       # 10. Deploy to App Engine
       - name: Deploy to App Engine
+        working-directory: app
         run: gcloud app deploy app.yaml --quiet
