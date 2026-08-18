@@ -1,0 +1,35 @@
+{% extends 'admin/base.html' %}
+
+{% load i18n unfold %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {% component "unfold/components/card.html" with title="Events" %}
+            <div data-box-value="Events" class="text-4xl font-semibold text-base-900 dark:text-base-100">&mdash;</div>
+            <div data-box-caption="Events" class="text-sm text-base-400 mt-1"></div>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Inscriptions" %}
+            <div data-box-value="Inscriptions" class="text-4xl font-semibold text-base-900 dark:text-base-100">&mdash;</div>
+            <div data-box-caption="Inscriptions" class="text-sm text-base-400 mt-1"></div>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Stages" %}
+            <div data-box-value="Stages" class="text-4xl font-semibold text-base-900 dark:text-base-100">&mdash;</div>
+            <div data-box-caption="Stages" class="text-sm text-base-400 mt-1"></div>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Times" %}
+            <div data-box-value="Times" class="text-4xl font-semibold text-base-900 dark:text-base-100">&mdash;</div>
+            <div data-box-caption="Times" class="text-sm text-base-400 mt-1"></div>
+        {% endcomponent %}
+    </div>
+
+    {% include "admin/_activity_chart.html" %}
+{% endblock %}

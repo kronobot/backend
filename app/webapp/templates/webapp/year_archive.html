@@ -1,0 +1,18 @@
+{% extends "webapp/base.html" %}
+
+{% block title %}Eventos {{ year }} — Kronobot{% endblock %}
+
+{% block content %}
+<section class="px-4 pt-8 pb-2">
+  <a href="{% url 'webapp:landing' %}" class="text-sm text-violet-600 font-medium">&larr; Volver</a>
+  <h1 class="text-2xl font-bold text-ink mt-2">Eventos {{ year }}</h1>
+</section>
+
+{% if category_rows %}
+  {% for row in category_rows %}
+    {% include "webapp/partials/_category_row.html" with label=row.label events=row.events %}
+  {% endfor %}
+{% else %}
+  <p class="px-4 text-muted text-sm py-4">No hay eventos registrados para {{ year }}.</p>
+{% endif %}
+{% endblock %}

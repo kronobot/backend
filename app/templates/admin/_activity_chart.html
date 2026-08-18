@@ -1,0 +1,297 @@
+{% load unfold %}
+
+{% component "unfold/components/card.html" with title="Import activity" class="mb-6" %}
+    <div class="flex flex-wrap items-center gap-2 mb-1">
+        {% for key, label, minutes in chart_ranges %}
+            <button type="button" data-range="{{ key }}" data-minutes="{{ minutes }}" class="dashboard-range-tab{% if forloop.first %} is-active{% endif %} px-3 py-1.5 text-sm rounded-default border border-base-200 dark:border-base-800">{{ label }}</button>
+        {% endfor %}
+        <button type="button" id="dashboard-chart-reset" class="hidden px-3 py-1.5 text-sm rounded-default border border-base-200 dark:border-base-800">Reset zoom</button>
+        <span id="dashboard-chart-resolution" class="text-xs text-base-400 ml-auto"></span>
+    </div>
+    <div class="text-xs text-base-400 mb-3">Drag on the chart to zoom into a custom range.</div>
+    <div class="relative w-full" style="height: 22rem;">
+        <canvas id="dashboard-activity-chart"></canvas>
+        <div id="dashboard-chart-selection" class="absolute top-0 bottom-0 hidden" style="pointer-events: none; background-color: var(--color-primary-600); opacity: 0.15;"></div>
+    </div>
+{% endcomponent %}
+
+{{ chart_series|json_script:"dashboard-chart-series" }}
+<style>
+    .dashboard-range-tab.is-active {
+        background-color: var(--color-primary-600);
+        border-color: var(--color-primary-600);
+        color: #fff;
+    }
+</style>
+<script>
+    (function () {
+        const windowStartMs = {{ chart_window_start_ms }};
+        const bucketMinutesBase = {{ chart_bucket_minutes }};
+        const bucketCount = {{ chart_bucket_count }};
+        const bucketMsBase = bucketMinutesBase * 60000;
+        const windowEndMs = windowStartMs + (bucketCount - 1) * bucketMsBase;
+
+        const rawSeries = JSON.parse(document.getElementById("dashboard-chart-series").textContent);
+        const seriesMeta = rawSeries.map((s) => ({ label: s.label, colorLight: s.colorLight, colorDark: s.colorDark }));
+        const seriesDense = rawSeries.map((s) => {
+            const arr = new Float64Array(bucketCount);
+            for (const [index, count] of s.buckets) {
+                arr[index] = count;
+            }
+            return arr;
+        });
+
+        const RESOLUTION_LADDER_MINUTES = [1, 5, 15, 30, 60, 180, 360, 720, 1440];
+        const MAX_RENDERED_BUCKETS = 300;
+
+        const pickBucketMinutes = (spanMinutes) => {
+            for (const step of RESOLUTION_LADDER_MINUTES) {
+                if (spanMinutes / step <= MAX_RENDERED_BUCKETS) {
+                    return step;
+                }
+            }
+            return RESOLUTION_LADDER_MINUTES[RESOLUTION_LADDER_MINUTES.length - 1];
+        };
+
+        const formatLabel = (ms, resMinutes) => {
+            const d = new Date(ms);
+            const pad = (n) => String(n).padStart(2, "0");
+            const datePart = `${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+            if (resMinutes >= 1440) {
+                return datePart;
+            }
+            return `${datePart} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        };
+
+        const isDarkMode = () => document.documentElement.classList.contains("dark");
+        const gridColor = () => (isDarkMode() ? "#2c2c2a" : "#e1e0d9");
+        const inkColor = () => "#898781";
+        const seriesColor = (meta) => (isDarkMode() ? meta.colorDark : meta.colorLight);
+
+        const canvas = document.getElementById("dashboard-activity-chart");
+        const chartWrapper = canvas.parentElement;
+        const selectionBox = document.getElementById("dashboard-chart-selection");
+        const tabs = document.querySelectorAll(".dashboard-range-tab");
+        const resetButton = document.getElementById("dashboard-chart-reset");
+        const resolutionLabel = document.getElementById("dashboard-chart-resolution");
+
+        let chart = null;
+        let currentView = { startMs: windowEndMs - 60 * 60000, endMs: windowEndMs };
+        let lastPresetTab = tabs.length ? tabs[0] : null;
+        let currentRangeLabel = tabs.length ? tabs[0].textContent.trim() : "";
+
+        const updateBoxes = (dataArrays) => {
+            seriesMeta.forEach((meta, i) => {
+                const total = dataArrays[i].reduce((sum, v) => sum + v, 0);
+                const valueEl = document.querySelector(`[data-box-value="${meta.label}"]`);
+                const captionEl = document.querySelector(`[data-box-caption="${meta.label}"]`);
+                if (valueEl) valueEl.textContent = total;
+                if (captionEl) captionEl.textContent = `Created — ${currentRangeLabel}`;
+            });
+        };
+
+        const buildDatasets = (dataArrays) =>
+            seriesMeta.map((meta, i) => ({
+                label: meta.label,
+                data: dataArrays[i],
+                borderColor: seriesColor(meta),
+                backgroundColor: seriesColor(meta),
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                pointHitRadius: 10,
+                tension: 0.2,
+            }));
+
+        const renderRange = (startMs, endMs) => {
+            startMs = Math.max(windowStartMs, startMs);
+            endMs = Math.min(windowEndMs + bucketMsBase, endMs);
+            if (endMs <= startMs) {
+                return;
+            }
+
+            const spanMs = endMs - startMs;
+            const resMinutes = pickBucketMinutes(spanMs / 60000);
+            const resMs = resMinutes * 60000;
+            const numBuckets = Math.max(1, Math.ceil(spanMs / resMs));
+
+            const labels = [];
+            for (let i = 0; i < numBuckets; i++) {
+                labels.push(formatLabel(startMs + i * resMs, resMinutes));
+            }
+
+            const dataArrays = seriesDense.map(() => new Array(numBuckets).fill(0));
+            const baseIdxStart = Math.max(0, Math.floor((startMs - windowStartMs) / bucketMsBase));
+            const baseIdxEnd = Math.min(bucketCount, Math.ceil((endMs - windowStartMs) / bucketMsBase));
+
+            seriesDense.forEach((dense, seriesIndex) => {
+                for (let bi = baseIdxStart; bi < baseIdxEnd; bi++) {
+                    const count = dense[bi];
+                    if (!count) {
+                        continue;
+                    }
+                    const baseBucketMs = windowStartMs + bi * bucketMsBase;
+                    if (baseBucketMs < startMs || baseBucketMs >= endMs) {
+                        continue;
+                    }
+                    const coarseIndex = Math.floor((baseBucketMs - startMs) / resMs);
+                    if (coarseIndex >= 0 && coarseIndex < numBuckets) {
+                        dataArrays[seriesIndex][coarseIndex] += count;
+                    }
+                }
+            });
+
+            currentView = { startMs, endMs };
+
+            if (!chart) {
+                return;
+            }
+            chart.data = { labels, datasets: buildDatasets(dataArrays) };
+            chart.update();
+            resolutionLabel.textContent =
+                resMinutes >= 1440 ? `Showing ${resMinutes / 1440}-day buckets` : `Showing ${resMinutes}-minute buckets`;
+            updateBoxes(dataArrays);
+        };
+
+        const setPreset = (tab) => {
+            lastPresetTab = tab;
+            currentRangeLabel = tab.textContent.trim();
+            tabs.forEach((t) => t.classList.toggle("is-active", t === tab));
+            resetButton.classList.add("hidden");
+            const minutes = Number(tab.dataset.minutes);
+            renderRange(windowEndMs - minutes * 60000, windowEndMs);
+        };
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => setPreset(tab));
+        });
+
+        resetButton.addEventListener("click", () => {
+            if (lastPresetTab) {
+                setPreset(lastPresetTab);
+            }
+        });
+
+        const init = () => {
+            if (!canvas || typeof Chart === "undefined") {
+                return;
+            }
+
+            chart = new Chart(canvas.getContext("2d"), {
+                type: "line",
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: { mode: "index", intersect: false },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: "top",
+                            align: "start",
+                            labels: { boxWidth: 16, boxHeight: 2, color: inkColor() },
+                        },
+                        tooltip: { enabled: true, mode: "index", intersect: false },
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: inkColor(), maxTicksLimit: 12, autoSkip: true },
+                            grid: { color: gridColor() },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: inkColor(), precision: 0 },
+                            grid: { color: gridColor() },
+                        },
+                    },
+                },
+            });
+
+            setPreset(tabs[0]);
+            setupDragToZoom();
+        };
+
+        const setupDragToZoom = () => {
+            let dragging = false;
+            let dragStartX = null;
+
+            const clampX = (x) => {
+                if (!chart.chartArea) return x;
+                return Math.min(Math.max(x, chart.chartArea.left), chart.chartArea.right);
+            };
+
+            const pxToMs = (x) => {
+                const area = chart.chartArea;
+                const ratio = (x - area.left) / (area.right - area.left);
+                return currentView.startMs + ratio * (currentView.endMs - currentView.startMs);
+            };
+
+            const showSelection = (x1, x2) => {
+                const left = Math.min(x1, x2);
+                const width = Math.abs(x2 - x1);
+                selectionBox.style.left = `${left}px`;
+                selectionBox.style.width = `${width}px`;
+                selectionBox.classList.remove("hidden");
+            };
+
+            const hideSelection = () => {
+                selectionBox.classList.add("hidden");
+            };
+
+            canvas.addEventListener("mousedown", (e) => {
+                if (!chart.chartArea) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                if (x < chart.chartArea.left || x > chart.chartArea.right) return;
+                dragging = true;
+                dragStartX = x;
+                showSelection(x, x);
+            });
+
+            canvas.addEventListener("mousemove", (e) => {
+                if (!dragging) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = clampX(e.clientX - rect.left);
+                showSelection(dragStartX, x);
+            });
+
+            document.addEventListener("mouseup", (e) => {
+                if (!dragging) return;
+                dragging = false;
+                hideSelection();
+
+                const rect = canvas.getBoundingClientRect();
+                const endX = clampX(e.clientX - rect.left);
+                if (Math.abs(endX - dragStartX) < 6) {
+                    return;
+                }
+
+                const msA = pxToMs(dragStartX);
+                const msB = pxToMs(endX);
+                const startMs = Math.min(msA, msB);
+                const endMs = Math.max(msA, msB);
+
+                tabs.forEach((t) => t.classList.remove("is-active"));
+                resetButton.classList.remove("hidden");
+                currentRangeLabel = "custom range";
+                renderRange(startMs, endMs);
+            });
+        };
+
+        const observer = new MutationObserver(() => {
+            if (!chart) return;
+            chart.data.datasets.forEach((dataset, i) => {
+                const color = seriesColor(seriesMeta[i]);
+                dataset.borderColor = color;
+                dataset.backgroundColor = color;
+            });
+            chart.options.scales.x.grid.color = gridColor();
+            chart.options.scales.y.grid.color = gridColor();
+            chart.update();
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+        window.addEventListener("load", init);
+    })();
+</script>

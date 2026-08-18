@@ -1,0 +1,50 @@
+{% extends "unfold/layouts/base_simple.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div class="px-4 py-6 sm:px-0">
+        <h1 class="font-semibold mb-2 text-font-important-light text-lg dark:text-font-important-dark">
+            Merge competitors
+        </h1>
+        <p class="mb-6 text-base-500 text-sm dark:text-base-400">
+            Choose which competitor survives the merge. All inscriptions and cars belonging to the other
+            competitor will be repointed to the survivor, and the other competitor will be deleted. This
+            cannot be undone.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="flex flex-col gap-3 mb-6">
+                {% for competitor in competitors %}
+                    <label class="bg-base-100 border border-transparent flex items-start gap-3 px-4 py-3 rounded-default cursor-pointer dark:bg-white/[.02]">
+                        <input type="radio" name="winner_id" value="{{ competitor.id }}" class="mt-1" required>
+                        <span>
+                            <span class="block font-medium text-font-important-light text-sm dark:text-font-important-dark">
+                                {{ competitor.name }}
+                            </span>
+                            <span class="block text-base-500 text-xs dark:text-base-400">
+                                Team: {{ competitor.team.name }} &middot; Created {{ competitor.created_at|date:"Y-m-d" }} &middot; {{ competitor.id }}
+                            </span>
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            {% for competitor in competitors %}
+                <input type="hidden" name="{{ action_checkbox_name }}" value="{{ competitor.id }}">
+            {% endfor %}
+            <input type="hidden" name="action" value="merge_selected_competitors">
+            <input type="hidden" name="post" value="yes">
+
+            <div class="flex gap-3">
+                <button type="submit" class="bg-primary-600 font-medium px-4 py-2 rounded-default text-sm text-white hover:bg-primary-700">
+                    Merge
+                </button>
+                <a href="{% url 'admin:inventory_competitor_changelist' %}" class="border border-base-200 font-medium px-4 py-2 rounded-default text-sm dark:border-base-700">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

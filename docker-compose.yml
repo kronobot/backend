@@ -13,7 +13,7 @@ services:
     volumes:
       - kronobot_postgres_data:/var/lib/postgresql/data
 
-  web:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -35,7 +35,7 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/usr/src/app
+      - ./app:/usr/src/app
 
 volumes:
   kronobot_postgres_data:

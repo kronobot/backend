@@ -1,0 +1,152 @@
+{% extends "webapp/base.html" %}
+
+{% block title %}{{ event.name }} — Kronobot{% endblock %}
+
+{% block content %}
+<div class="w-full h-56 sm:h-72 bg-gradient-to-br from-violet-600 to-fuchsia-600">
+  {% if event.image %}
+    <img src="{{ event.image.url }}" alt="{{ event.name }}" class="w-full h-full object-cover object-top">
+  {% else %}
+    <div class="w-full h-full flex items-center justify-center px-6">
+      <h1 class="text-white text-2xl sm:text-3xl font-bold text-center">{{ event.name }}</h1>
+    </div>
+  {% endif %}
+</div>
+
+<div class="px-4 py-6" data-tab-scope data-event-id="{{ event.id }}">
+  <span class="inline-block text-xs font-semibold uppercase tracking-wide text-violet-700 bg-violet-100 rounded-full px-3 py-1">
+    {{ category_label }}
+  </span>
+  <h1 class="mt-3 text-2xl font-bold text-ink">{{ event.name }}</h1>
+  <p class="mt-1 text-muted">
+    {{ event.start_date|date:"d M Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"d M Y" }}{% endif %}
+  </p>
+
+  <div class="mt-6 sticky top-[61px] z-10 w-screen mx-[calc(50%-50vw)] bg-white/90 backdrop-blur border-b border-hairline">
+    <div class="flex justify-center px-4 py-3">
+      <div class="inline-flex rounded-full bg-surface border border-hairline p-1">
+        <button type="button" data-tab-button data-tab="tramos"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors bg-violet-600 text-white">
+          Tramos
+        </button>
+        <button type="button" data-tab-button data-tab="inscripciones"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors text-muted">
+          Inscripciones
+        </button>
+        <button type="button" data-tab-button data-tab="live"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors text-muted">
+          En directo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div data-tab-panel data-tab="tramos">
+    {% if stages %}
+      <div class="mt-6 space-y-3">
+        {% for stage in stages %}
+          <div class="rounded-xl bg-white border border-hairline p-4 flex items-center gap-4">
+            <div class="shrink-0 w-12 h-10 rounded-lg bg-violet-600 text-white font-bold flex items-center justify-center text-sm">
+              {{ stage.loop }}{{ stage.loop_position }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold text-ink">{{ stage.name }}</p>
+              <p class="text-sm text-muted">
+                {{ stage.date|date:"d M Y" }} · {{ stage.time|time:"H:i" }} · {{ stage.distance_km }} km
+              </p>
+            </div>
+            <span class="shrink-0 text-xs font-semibold uppercase tracking-wide rounded-full px-3 py-1
+              {% if stage.status == 'finished' %}bg-emerald-100 text-emerald-700
+              {% elif stage.status == 'in_progress' %}bg-amber-100 text-amber-700
+              {% else %}bg-surface text-muted{% endif %}">
+              {{ stage.status_label }}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="mt-6 text-muted text-sm">Todavía no hay tramos publicados para este evento.</p>
+    {% endif %}
+  </div>
+
+  <div data-tab-panel data-tab="inscripciones" hidden>
+    {% if inscriptions %}
+      <div class="mt-6 space-y-3">
+        {% for inscription in inscriptions %}
+          <div class="relative rounded-xl bg-white border border-hairline p-4 flex items-center gap-4">
+            <div class="shrink-0 w-10 h-10 rounded-full bg-violet-600 text-white font-bold flex items-center justify-center text-sm">
+              {{ inscription.dorsal }}
+            </div>
+            <div class="min-w-0 flex-1 pr-8">
+              <p class="font-semibold text-ink">🔥 {{ inscription.driver.name }}</p>
+              {% if inscription.codriver %}
+                <p class="mt-1 font-semibold text-ink">📓 {{ inscription.codriver.name }}</p>
+              {% endif %}
+              <hr class="my-2 border-hairline mr-8">
+              <p class="text-sm text-muted">
+                🚗 {{ inscription.car.brand }} {{ inscription.car.model }}
+              </p>
+            </div>
+            <button type="button" data-favorite-toggle data-inscription-id="{{ inscription.id }}"
+              aria-pressed="false" aria-label="Marcar como favorito"
+              class="absolute top-3 right-3 text-hairline hover:text-red-400 transition-colors">
+              <svg data-favorite-icon class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21s-6.716-4.35-9.428-8.09C.826 10.293 1.5 6.5 4.5 5A5 5 0 0 1 12 7a5 5 0 0 1 7.5-2c3 1.5 3.674 5.293 1.928 7.91C18.716 16.65 12 21 12 21z"/>
+              </svg>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="mt-6 text-muted text-sm">Todavía no hay inscripciones para este evento.</p>
+    {% endif %}
+  </div>
+
+  <div data-tab-panel data-tab="live" hidden>
+    <div class="mt-6 flex items-center justify-between gap-3">
+      <h2 class="text-lg font-semibold text-ink">En directo</h2>
+      <button type="button" data-favorites-filter-toggle aria-pressed="false"
+        class="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-sm font-semibold text-muted transition-colors">
+        Mostrar solo favoritos
+      </button>
+    </div>
+    {% if timeline %}
+      <div class="mt-4 space-y-4">
+        {% for entry in timeline %}
+          <div class="flex gap-4" data-timeline-entry data-inscription-id="{{ entry.inscription_id|default_if_none:'' }}">
+            <div class="shrink-0 w-14 text-right text-xs text-muted pt-4">
+              <p class="font-semibold text-ink">{{ entry.timestamp|date:"d M" }}</p>
+              <p>{{ entry.timestamp|time:"H:i" }}</p>
+            </div>
+            <div class="relative min-w-0 flex-1 rounded-xl bg-white border border-hairline p-4 flex items-center gap-4
+              {% if entry.type == 'scratch' %}border-amber-300{% endif %}">
+              <div class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg
+                {% if entry.type == 'stage_finished' %}bg-emerald-100
+                {% elif entry.type == 'abandonment' %}bg-red-100
+                {% elif entry.type == 'did_not_start' %}bg-surface
+                {% elif entry.type == 'scratch' %}bg-amber-100
+                {% elif entry.type == 'stage_completed' %}bg-violet-100
+                {% endif %}">
+                {% if entry.car_image %}
+                  <img src="{{ entry.car_image }}" alt="" class="w-10 h-10 rounded-full object-cover">
+                {% elif entry.type == 'stage_finished' %}🏁
+                {% elif entry.type == 'abandonment' %}🛑
+                {% elif entry.type == 'did_not_start' %}🚫
+                {% elif entry.type == 'scratch' %}🏆
+                {% elif entry.type == 'stage_completed' %}✅
+                {% endif %}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-semibold text-ink">{{ entry.title }}</p>
+                <p class="text-sm text-muted">{{ entry.subtitle }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="mt-4 text-muted text-sm">Todavía no hay actividad en directo para este evento.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
