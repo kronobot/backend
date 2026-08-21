@@ -83,7 +83,7 @@ class KronoliveHillclimbEventsGateway(KronoliveEventsGateway):
                     time=datetime.strptime(cells[2].get_text(strip=True), "%H:%M").time(),
                     distance_km=0.0,
                     status=self._parse_stage_status(cells[3].get_text(strip=True)),
-                    finished_count=int(cells[4].get_text(strip=True)),
+                    finished_count=self._parse_finished_count(cells[4].get_text(strip=True)),
                 )
             )
 

@@ -1,6 +1,8 @@
 import logging
 from datetime import date
 
+from django.conf import settings
+from django.http import HttpResponseForbidden
 from ninja import Router
 
 from inventory.application.fetch_times_kronolive.fetch_times_kronolive_command import FetchTimesKronoliveCommand
@@ -57,8 +59,21 @@ def _find_close_events() -> list[Event]:
     return handler.handle(FindCloseEventsQuery())
 
 
-@router.post("/providers/kronolive/import-this-year-events", response={202: None})
+def _require_appengine_cron(request) -> HttpResponseForbidden | None:
+    # App Engine's Cron Service is the only caller that can set this header;
+    # App Engine strips it from any externally-originated request.
+    if settings.DEBUG:
+        return None
+    if request.headers.get("X-Appengine-Cron") != "true":
+        return HttpResponseForbidden()
+    return None
+
+
+@router.get("/providers/kronolive/import-this-year-events", response={202: None, 403: None})
 def import_this_year_events(request):
+    if forbidden := _require_appengine_cron(request):
+        return forbidden
+
     handler = SyncEventsKronoliveCommandHandler(
         kronolive_gateway=KronoliveEventsGateway(),
         event_repository=DbEventRepository(),
@@ -67,8 +82,11 @@ def import_this_year_events(request):
     return 202, None
 
 
-@router.post("/import-close-events-stages", response={202: None})
+@router.get("/import-close-events-stages", response={202: None, 403: None})
 def import_close_events_stages(request):
+    if forbidden := _require_appengine_cron(request):
+        return forbidden
+
     for event in _find_close_events():
         try:
             handler = SyncEventStagesKronoliveCommandHandler(
@@ -84,8 +102,11 @@ def import_close_events_stages(request):
     return 202, None
 
 
-@router.post("/import-close-events-inscriptions", response={202: None})
+@router.get("/import-close-events-inscriptions", response={202: None, 403: None})
 def import_close_events_inscriptions(request):
+    if forbidden := _require_appengine_cron(request):
+        return forbidden
+
     for event in _find_close_events():
         try:
             handler = ImportInscriptionsKronoliveCommandHandler(
@@ -104,8 +125,11 @@ def import_close_events_inscriptions(request):
     return 202, None
 
 
-@router.post("/import-close-events-times", response={202: None})
+@router.get("/import-close-events-times", response={202: None, 403: None})
 def import_close_events_times(request):
+    if forbidden := _require_appengine_cron(request):
+        return forbidden
+
     for event in _find_close_events():
         try:
             handler = FetchTimesKronoliveCommandHandler(
