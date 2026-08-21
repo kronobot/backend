@@ -1,0 +1,20 @@
+cron:
+- description: "Import this year's events from Kronolive"
+  url: /tasks/providers/kronolive/import-this-year-events
+  schedule: every 1 minutes
+  target: default
+
+- description: "Sync stages for close events"
+  url: /tasks/import-close-events-stages
+  schedule: every 1 minutes
+  target: default
+
+- description: "Import inscriptions for close events"
+  url: /tasks/import-close-events-inscriptions
+  schedule: every 1 minutes
+  target: default
+
+- description: "Fetch times for close events"
+  url: /tasks/import-close-events-times
+  schedule: every 1 minutes
+  target: default

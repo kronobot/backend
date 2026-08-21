@@ -80,3 +80,8 @@ jobs:
       - name: Deploy to App Engine
         working-directory: app
         run: gcloud app deploy app.yaml --quiet
+
+      # 11. Deploy cron jobs
+      - name: Deploy cron config
+        working-directory: app
+        run: gcloud app deploy cron.yaml --quiet

@@ -179,7 +179,7 @@ class KronoliveEventsGateway:
                     time=datetime.strptime(cells[3].get_text(strip=True), "%H:%M").time(),
                     distance_km=self._parse_distance_km(cells[4].get_text(strip=True)),
                     status=self._parse_stage_status(cells[5].get_text(strip=True)),
-                    finished_count=int(cells[6].get_text(strip=True)),
+                    finished_count=self._parse_finished_count(cells[6].get_text(strip=True)),
                 )
             )
 
@@ -191,6 +191,9 @@ class KronoliveEventsGateway:
 
     def _parse_distance_km(self, text: str) -> float:
         return float(text.replace("km", "").strip().replace(".", "").replace(",", "."))
+
+    def _parse_finished_count(self, text: str) -> int:
+        return int(text) if text else 0
 
     def _parse_stage_status(self, text: str) -> str:
         mapping = {
