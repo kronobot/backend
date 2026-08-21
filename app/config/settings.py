@@ -75,6 +75,12 @@ if os.getenv("GAE_APPLICATION") is not None:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+    # App Engine's Cron Service calls instances directly, bypassing the HTTPS
+    # front-end, so its requests never carry X-Forwarded-Proto: https. Without
+    # this exemption SecurityMiddleware 301s them before our own auth guard
+    # (X-Appengine-Cron header check in tasks/router.py) ever runs.
+    SECURE_REDIRECT_EXEMPT = [r"^tasks/"]
+
     # Media files
     INSTALLED_APPS += ["storages"]
     GS_BUCKET_NAME = "kronobot-backend-media"
